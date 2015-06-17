@@ -74,7 +74,7 @@ class Genome:
 
         disjoint = 0
         for i in range(excessLimit):
-            if not(geneInnovations[i] and otherInnovations[i]):
+            if geneInnovations[i] is not otherInnovations[i]:
                 disjoint += 1
 
         return disjoint
@@ -174,9 +174,8 @@ class Genome:
 
         return False
 
-    def crossover(self, other, useOther):
+    def crossover(self, other, useOther=False):
         maxInnovation = max(self.genes[-1].innovation, other.genes[-1].innovation)
-        excessLimit = min(self.genes[-1].innovation, other.genes[-1].innovation)
         geneInnovations = [False for i in range(maxInnovation)]
         otherInnovations = [False for i in range(maxInnovation)]
         for gene in self.genes:
@@ -186,20 +185,26 @@ class Genome:
             otherInnovations[gene.innovation] = True
 
         child = Genome(self.inputs, self.outputs)
-        for i in range(excessLimit):
-            if geneInnovations[i] and otherInnovations[i]:
+        if useOther:
+            parent = other
+
+        else:
+            parent = self
+
+        for gene in parent.genes:
+            if geneInnovations[gene.innovation] and otherInnovations[gene.innovation]:
                 if random.random() < 0.5:
-                    child.genes.append(self.genes[i].copy())
+                    child.genes.append(gene.copy())
 
                 else:
-                    child.genes.append(self.genes[i].copy())
+                    child.genes.append(gene.copy())
 
-            elif geneInnovations[i] or otherInnovations[i]:
+            elif geneInnovations[gene.innovation] or otherInnovations[gene.innovation]:
                 if useOther:
-                    child.genes.append(other.genes[i].copy())
+                    child.genes.append(gene.copy())
 
                 else:
-                    child.genes.append(self.genes[i].copy())
+                    child.genes.append(gene.copy())
 
         return child
 
