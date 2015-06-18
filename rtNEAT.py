@@ -2,6 +2,14 @@ __author__ = 'Coleman'
 
 import random
 
+class population:
+    def __init__(self):
+        self.species = []
+        self.age = 0
+
+    def rankGlobally(organism):
+        pass
+
 class Species:
     def __init__(self):
         self.representative = None
@@ -10,10 +18,10 @@ class Species:
         self.averageFitness = 0
         self.staleness = 0
 
-    def inSpecies(self, genome):
+    def inSpecies(self, organism):
         pass
 
-    def adjustedFitness(self, genome):
+    def adjustedFitness(self, organism):
         pass
 
     def calculateFitness(self):
@@ -29,7 +37,7 @@ class Species:
         pass
 
 class Organism:
-    def __init__(self, inputs, outputs, genome):
+    def __init__(self, inputs=None, outputs=None, genome=None):
         if genome is None:
             self.genome = Genome(inputs, outputs)
 
@@ -41,8 +49,15 @@ class Organism:
         self.fitness = 0
         self.adjustedFitness = 0
 
-    def breed(self, organism):
-        pass
+    def breed(self, other):
+        global crossoverChance
+        if random.random() < crossoverChance:
+            genome = self.genome.crossover(other.genome, other.fitness > self.fitness)
+
+        else:
+            genome = self.genome.copy()
+
+        return Organism(genome=genome)
 
     def calculateFitness(self):
         pass
@@ -53,13 +68,6 @@ class Genome:
         self.outputs = outputs
         self.genes = []
         self.numNeurons = 0
-
-    def copy(self):
-        newGenome = Genome(self.inputs, self.outputs)
-        newGenome.genes = [gene.copy() for gene in self.genes]
-        newGenome.numNeurons = self.numNeurons
-
-        return newGenome
 
     def disjoint(self, other):
         maxInnovation = max(self.genes[-1].innovation, other.genes[-1].innovation)
@@ -110,7 +118,7 @@ class Genome:
         return ((c1 * self.excess(other)) / numGenes) + ((c2 * self.disjoint(other)) / numGenes) + (c3 * self.weight(other))
 
     def mutate(self):
-        global biasChance, weightChance, nodeChance, connectionChance, disableChance, enableChance
+        global biasChance, weightChance, nodeChance, linkChance, disableChance, enableChance
         if random.random() < biasChance:
             self.linkMutate(True)
 
@@ -120,7 +128,7 @@ class Genome:
         if random.random() < nodeChance:
             self.nodeMutate()
 
-        if random.random() < connectionChance:
+        if random.random() < linkChance:
             self.linkMutate()
 
         if random.random() < disableChance:
@@ -137,6 +145,8 @@ class Genome:
 
         else:
             gene.weight = random.uniform(-1, 1)
+
+        gene.age += 1
 
     def linkMutate(self, bias):
         input = random.choice(list(range(self.numNeurons)) + self.inputs)
@@ -174,7 +184,14 @@ class Genome:
 
         return False
 
-    def crossover(self, other, useOther=False):
+    def copy(self):
+        newGenome = Genome(self.inputs, self.outputs)
+        newGenome.genes = [gene.copy() for gene in self.genes]
+        newGenome.numNeurons = self.numNeurons
+
+        return newGenome
+
+    def crossover(self, other, useOther):
         maxInnovation = max(self.genes[-1].innovation, other.genes[-1].innovation)
         geneInnovations = [False for i in range(maxInnovation)]
         otherInnovations = [False for i in range(maxInnovation)]
@@ -220,7 +237,7 @@ class Gene:
 
     def copy(self):
         newGene = Gene(self.innovation, self.input, self.output)
-        newGene.age = self.age + 1
+        newGene.age = self.age
         newGene.weight = self.weight
         newGene.enabled = self.enabled
 
@@ -306,12 +323,16 @@ def newInnovation():
     return currentInnovation
 
 
+
+
+
 # for main file
 def step():
     global population
     for organism in population:
         organism.age += 1
 
+stalenessLimit = 15
 distanceThreshold = 0
 weightChange = .1
 c1 = 0
@@ -322,15 +343,10 @@ biasChance = 0
 perturbChance = 0
 weightChance = 0
 nodeChance = 0
-connectionChance = 0
+linkChance = 0
 disableChance = 0
 enableChance = 0
+crossoverChance = 0
 
 steepness = 5
 recurrent = False
-
-population = []
-species = []
-
-def rankGlobally(organism):
-    pass
