@@ -145,3 +145,35 @@ class Neuron:
 
     def sigmoid(self):
         pass
+
+
+
+
+
+class XOR(Organism):
+    def __init__(self, population, genome=None):
+        super(XOR, self).__init__(population, genome)
+
+    def breed(self, other):
+        newOrganism = XOR(self.population, genome=self.genome.crossover(other.genome))
+        newOrganism.genome.organism = newOrganism
+        newOrganism.mutate()
+
+        return newOrganism
+
+    def calculateFitness(self):
+        inputs = [{"A": 0, "B": 0},
+                  {"A": 0, "B": 1},
+                  {"A": 1, "B": 0},
+                  {"A": 1, "B": 1}]
+
+        outputs = [{"OUT": 0},
+                   {"OUT": 1},
+                   {"OUT": 1},
+                   {"OUT": 0}]
+
+        self.fitness = 0
+        for inputs, targets in zip(inputs, outputs):
+            output = self.network.eval(inputs)
+            for key in targets.keys():
+                self.fitness += (output[key] - targets[key]) + 2
