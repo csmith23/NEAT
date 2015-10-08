@@ -7,10 +7,14 @@ class Population:
         self.species = [Species()]
         self.species[0].representative = Organism()
         self.species[0].organisms = self.organisms
-
-        self.size = size
+        
         self.innovation = 0
-        self.innovationGenes = []
+        self.innovationGenes = {} # (source, destination): innovation
+        self.node = 0
+        self.nodeGenes = {} # (source, destination): node
+        # ^used for when a new node is created by splitting a previous connection, ensuring no explosion of node identities
+        
+        self.size = size
         self.organisms = [Organism() for i in range(size)]
         self.IO = []
         self.epoch = 0
@@ -34,6 +38,9 @@ class Population:
 
     def newInnovation(self, gene):
         pass
+    
+    def newNode(self, gene):
+        pass
 
 class Species:
     def __init__(self):
@@ -48,10 +55,13 @@ class Species:
     def adjustFitness(self):
         pass
 
-    def cull(self, newGeneration=False):
+    def cull(self):
+        '''culls the population of the species by half, to repopulate it from. If there is only one member
+        no breeding will take place that cycle, but the population will not be culled'''
         pass
 
     def breed(self):
+        '''breeds the population of the species to twice what it was before, and returns the new organisms in a list'''
         pass
 
 class Organism:
